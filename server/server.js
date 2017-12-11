@@ -14,15 +14,21 @@ var app = express();
 const port = process.env.PORT;
 
 //app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // --------------------------------
 // crop
 // --------------------------------
 
+// base url =  https://fierce-dawn-32275.herokuapp.com/
+
 app.post('/addCrop', authenticate, (req, res) => {
   var crop = new Crop({
-    text: req.body.text,
+    cropname: req.body.cropname,
+    croptype: req.body.croptype,
+    croppic: req.body.croppic,
+    cropaddress: req.body.cropaddress,
+    cropqty: req.body.cropqty,
     _creator: req.user._id
   });
 
@@ -33,7 +39,7 @@ app.post('/addCrop', authenticate, (req, res) => {
   });
 });
 
-app.post('/getAllCrops', authenticate, (req, res) => {
+app.post('/getAllMyCrops', authenticate, (req, res) => {
   Crop.find({
     _creator: req.user._id
   }).then((doc) => {
@@ -43,7 +49,7 @@ app.post('/getAllCrops', authenticate, (req, res) => {
   });
 });
 
-app.post('/getMyCrop', authenticate, (req, res) => {
+app.post('/getCropById', authenticate, (req, res) => {
   var id = req.body.id;
 
   if (!ObjectID.isValid(id)) {
@@ -87,18 +93,12 @@ app.post('/removeCrop', authenticate, (req, res) => {
 });
 
 app.post('/updateCrop', authenticate, (req, res) => {
+
   var id = req.body.id;
-  var body = _.pick(req.body, ['text', 'completed']);
+  var body = _.pick(req.body, ['cropname', 'croptype','croppic', 'cropaddress','cropqty']);
 
   if (!ObjectID.isValid(id)) {
     return res.status(404).send();
-  }
-
-  if (_.isBoolean(body.completed) && body.completed) {
-    body.completedAt = new Date().getTime();
-  } else {
-    body.completed = false;
-    body.completedAt = null;
   }
 
   Crop.findOneAndUpdate({_id: id, _creator: req.user._id}, {$set: body}, {new: true}).then((doc) => {
@@ -117,7 +117,7 @@ app.post('/updateCrop', authenticate, (req, res) => {
 // --------------------------------
 
 app.post('/registerUser', (req, res) => {
-  var body = _.pick(req.body, ['name', 'mobile', 'password']);
+  var body = _.pick(req.body, ['name', 'mobile', 'password','lat','lng','acre','cultivation']);
   var user = new User(body);
 
   user.save().then(() => {
@@ -129,14 +129,14 @@ app.post('/registerUser', (req, res) => {
   })
 });
 
-app.get('/users/me', authenticate, (req, res) => {
+app.post('/profileUser', authenticate, (req, res) => {
   res.send(req.user);
 });
 
 app.post('/loginUser', (req, res) => {
-  var body = _.pick(req.body, ['name','mobile', 'password']);
+  var body = _.pick(req.body, ['mobile', 'password']);
 
-  User.findByCredentials(body.name, body.mobile, body.password).then((user) => {
+  User.findByCredentials(body.mobile, body.password).then((user) => {
     return user.generateAuthToken().then((token) => {
       res.header('x-auth', token).send(user);
     });
@@ -145,7 +145,7 @@ app.post('/loginUser', (req, res) => {
   });
 });
 
-app.delete('/users/me/token', authenticate, (req, res) => {
+app.post('/logoutUser', authenticate, (req, res) => {
   req.user.removeToken(req.token).then(() => {
     res.status(200).send();
   }, () => {

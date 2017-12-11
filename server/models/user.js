@@ -22,6 +22,26 @@ var UserSchema = new mongoose.Schema({
     require: true,
     minlength: 6
   },
+  lat: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  lng: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  acre: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  cultivation: {
+    type: String,
+    trim: true,
+    default: "",
+  },
   tokens: [{
     access: {
       type: String,
@@ -32,13 +52,13 @@ var UserSchema = new mongoose.Schema({
       required: true
     }
   }]
-});
+}, { usePushEach: true });
 
 UserSchema.methods.toJSON = function () {
   var user = this;
   var userObject = user.toObject();
 
-  return _.pick(userObject, ['_id', 'email']);
+  return _.pick(userObject, ['_id', 'name', 'mobile','acre', 'cultivation']);
 };
 
 UserSchema.methods.generateAuthToken = function () {
@@ -80,10 +100,10 @@ UserSchema.statics.findByToken = function (token) {
   });
 };
 
-UserSchema.statics.findByCredentials = function (email, password) {
+UserSchema.statics.findByCredentials = function (mobile, password) {
   var User = this;
 
-  return User.findOne({email}).then((user) => {
+  return User.findOne({mobile}).then((user) => {
     if (!user) {
       return Promise.reject();
     }

@@ -11,25 +11,21 @@ var Crop = mongoose.model('Crop', {
     type: String,
     trim: true
   },
-  pic: {
+  croppic: {
     type: String,
     trim: true
   },
-  address: {
+  cropaddress: {
     type: String,
     required: true,
     minlength: 1,
     trim: true
   },
-  date: {
+  cropdate: {
     type: Number,
-    default: null
+    default: Date.now
   },
-  quantity: {
-    type: Number,
-    default: null
-  },
-  price: {
+  cropqty: {
     type: Number,
     default: null
   },
