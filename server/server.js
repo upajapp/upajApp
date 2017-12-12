@@ -8,6 +8,7 @@ const {ObjectID} = require('mongodb');
 var {mongoose} = require('./db/mongoose');
 var {Crop} = require('./models/crop');
 var {User} = require('./models/user');
+var {Cprice} = require('./models/cprice');
 var {authenticate} = require('./middleware/authenticate');
 
 var app = express();
@@ -15,6 +16,83 @@ const port = process.env.PORT;
 
 //app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// --------------------------------
+// cprice
+// --------------------------------
+
+app.post('/addCprice', (req, res) => {
+  var cprice = new Cprice({
+    cname: req.body.cname,
+    csp: req.body.csp,
+    cnp: req.body.cnp,
+    cp: req.body.cp
+  });
+
+  cprice.save().then((doc) => {
+    res.send(doc);
+  }, (e) => {
+    res.status(400).send(e);
+  });
+});
+
+app.post('/getAllCprice', (req, res) => {
+  Cprice.find({
+  }).then((doc) => {
+    res.send({doc});
+  }, (e) => {
+    res.status(400).send(e);
+  });
+});
+
+app.post('/getCpriceByName', (req, res) => {
+  var cname = req.body.cname;
+
+  Cprice.findOne({
+    cname
+  }).then((doc) => {
+    if (!doc) {
+      return res.status(404).send();
+    }
+
+    res.send({doc});
+  }).catch((e) => {
+    res.status(400).send();
+  });
+});
+
+app.post('/removeCprice', (req, res) => {
+  var cname = req.body.cname;
+
+  Cprice.findOneAndRemove({
+    cname
+  }).then((doc) => {
+    if (!doc) {
+      return res.status(404).send();
+    }
+
+    res.send({doc});
+  }).catch((e) => {
+    res.status(400).send();
+    
+  });
+});
+
+app.post('/updateCprice', (req, res) => {
+
+  var cname = req.body.cname;
+  var body = _.pick(req.body, ['cname', 'csp','cnp', 'cp']);
+
+  Cprice.findOneAndUpdate({cname}, {$set: body}, {new: true}).then((doc) => {
+    if (!doc) {
+      return res.status(404).send();
+    }
+
+    res.send({doc});
+  }).catch((e) => {
+    res.status(400).send();
+  })
+});
 
 // --------------------------------
 // crop
