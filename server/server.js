@@ -98,7 +98,6 @@ app.post('/updateCprice', (req, res) => {
 // crop
 // --------------------------------
 
-// base url =  https://fierce-dawn-32275.herokuapp.com/
 
 app.post('/addCrop', authenticate, (req, res) => {
   var crop = new Crop({
@@ -201,7 +200,7 @@ app.post('/registerUser', (req, res) => {
   user.save().then(() => {
     return user.generateAuthToken();
   }).then((token) => {
-    res.header('x-auth', token).send(user);
+    res.header('x-auth', token).send({token,user});
   }).catch((e) => {
     res.status(400).send(e);
   })
@@ -216,7 +215,7 @@ app.post('/loginUser', (req, res) => {
 
   User.findByCredentials(body.mobile, body.password).then((user) => {
     return user.generateAuthToken().then((token) => {
-      res.header('x-auth', token).send(user);
+      res.header('x-auth', token).send({token,user});
     });
   }).catch((e) => {
     res.status(400).send();
